@@ -1,52 +1,53 @@
 import streamlit as st
-from langchain.llms import OpenAI
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
-from langchain.chains import RetrievalQA
-from langchain.document_loaders import TextLoader
+import requests
+import json
 
-from langchain.document_loaders import PyPDFLoader
+# OpenAI API configuration
+OPENAI_API_KEY = 'YOUR_API_KEY'
+API_ENDPOINT = 'https://api.openai.com/v1/engines/davinci-codex/completions'
 
-def generate_response(uploaded_file, openai_api_key, query_text):
-    # Load document if file is uploaded
-    if uploaded_file is not None:
-        loader = PyPDFLoader(uploaded_file)
-        pages = loader.load_and_split()
-        documents = loader.load()
-        # # Split documents into chunks
-        # text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-        # texts = text_splitter.create_documents(documents)
-        # Select embeddings
-        embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-        # Create a vectorstore from documents
-        db = Chroma.from_documents(documents, embeddings)
-        # Create retriever interface
-        retriever = db.as_retriever()
-        # Create QA chain
-        qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=openai_api_key), chain_type='stuff', retriever=retriever)
-        return qa.run(query_text)
+# Streamlit app configuration
+st.set_page_config(
+    page_title="PDF Question Answering",
+    layout="wide"
+)
 
-# Page title
-st.set_page_config(page_title='🦜🔗 Ask the Doc App')
-st.title('🦜🔗 Ask the Doc App')
+# Streamlit app title and description
+st.title("PDF Question Answering with Instruct GPT-3.5")
+st.markdown("Upload a PDF file and ask questions about its content.")
 
 # File upload
-uploaded_file = st.file_uploader('Upload an article')
-st.write("filename:", uploaded_file.name)
-# Query text
-query_text = st.text_input('Enter your question:', placeholder = 'Please provide a short summary.', disabled=not uploaded_file)
+uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
 
-# Form input and query
-result = []
-with st.form('myform', clear_on_submit=True):
-    openai_api_key = st.text_input('OpenAI API Key', type='password', disabled=not (uploaded_file and query_text))
-    submitted = st.form_submit_button('Submit', disabled=not(uploaded_file and query_text))
-    if submitted and openai_api_key.startswith('sk-'):
-        with st.spinner('Calculating...'):
-            response = generate_response(uploaded_file, openai_api_key, query_text)
-            result.append(response)
-            del openai_api_key
+if uploaded_file is not None:
+    # Display uploaded file details
+    st.write("Uploaded file:", uploaded_file.name)
+    
+    # Read PDF content
+    pdf_content = uploaded_file.read()
 
-if len(result):
-    st.info(response)
+    # User question
+    question = st.text_input("Enter your question")
+
+    if st.button("Get Answer"):
+        # Prepare the payload for OpenAI API
+        payload = {
+            'prompt': question,
+            'documents': [pdf_content.decode('utf-8')],
+            'max_tokens': 100
+        }
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {OPENAI_API_KEY}'
+        }
+
+        # Send request to OpenAI API
+        response = requests.post(API_ENDPOINT, data=json.dumps(payload), headers=headers)
+
+        if response.status_code == 200:
+            # Extract and display the answer
+            data = response.json()
+            answer = data['choices'][0]['text'].strip()
+            st.success(f"Answer: {answer}")
+        else:
+            st.error("Something went wrong. Please try again later.")

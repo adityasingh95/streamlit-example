@@ -11,6 +11,7 @@ def generate_response(uploaded_file, openai_api_key, query_text):
     # Load document if file is uploaded
     if uploaded_file is not None:
         loader = PyPDFLoader(uploaded_file.name)
+        pages = loader.load_and_split()
         documents = loader.load()
         # # Split documents into chunks
         # text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
@@ -30,7 +31,7 @@ st.set_page_config(page_title='🦜🔗 Ask the Doc App')
 st.title('🦜🔗 Ask the Doc App')
 
 # File upload
-uploaded_file = st.file_uploader('Upload an article', type='pdf')
+uploaded_file = st.file_uploader('Upload an article')
 # Query text
 query_text = st.text_input('Enter your question:', placeholder = 'Please provide a short summary.', disabled=not uploaded_file)
 

@@ -3,10 +3,6 @@ import requests
 import json
 import fitz
 
-# OpenAI API configuration
-OPENAI_API_KEY = 'YOUR_API_KEY'
-API_ENDPOINT = 'https://api.openai.com/v1/davinci-codex/models/completion'
-
 # Streamlit app configuration
 st.set_page_config(
     page_title="PDF Question Answering",
@@ -17,10 +13,16 @@ st.set_page_config(
 st.title("PDF Question Answering with Instruct GPT-3.5")
 st.markdown("Upload a PDF file and ask questions about its content.")
 
+# Input API key
+api_key = st.text_input("Enter your OpenAI API key", type="password")
+
 # File upload
 uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
 
-if uploaded_file is not None:
+if api_key and uploaded_file:
+    # OpenAI API configuration
+    API_ENDPOINT = 'https://api.openai.com/v1/davinci-codex/models/completion'
+
     # Display uploaded file details
     st.write("Uploaded file:", uploaded_file.name)
 
@@ -42,7 +44,7 @@ if uploaded_file is not None:
         }
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {OPENAI_API_KEY}'
+            'Authorization': f'Bearer {api_key}'
         }
 
         # Send request to OpenAI API

@@ -1,7 +1,2 @@
-streamlit
-langchain
-openai
-chromadb
-tiktoken
-pypdf
-pymupdf
+streamlit==0.88.0
+requests==2.26.0

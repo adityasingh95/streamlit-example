@@ -5,17 +5,20 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chains import RetrievalQA
 
+from langchain.document_loaders import PyPDFLoader
+
 def generate_response(uploaded_file, openai_api_key, query_text):
     # Load document if file is uploaded
     if uploaded_file is not None:
-        documents = [uploaded_file.read().decode()]
-        # Split documents into chunks
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-        texts = text_splitter.create_documents(documents)
+        loader = PyPDFLoader(uploaded_file.name)
+        documents = loader.load()
+        # # Split documents into chunks
+        # text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        # texts = text_splitter.create_documents(documents)
         # Select embeddings
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
         # Create a vectorstore from documents
-        db = Chroma.from_documents(texts, embeddings)
+        db = Chroma.from_documents(documents, embeddings)
         # Create retriever interface
         retriever = db.as_retriever()
         # Create QA chain

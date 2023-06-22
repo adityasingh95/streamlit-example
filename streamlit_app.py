@@ -1,10 +1,11 @@
 import streamlit as st
 import requests
 import json
+import PyPDF2
 
 # OpenAI API configuration
 OPENAI_API_KEY = 'YOUR_API_KEY'
-API_ENDPOINT = 'https://api.openai.com/v1/engines/davinci-codex/completions'
+API_ENDPOINT = 'https://api.openai.com/v1/davinci-codex/models/completion'
 
 # Streamlit app configuration
 st.set_page_config(
@@ -22,9 +23,10 @@ uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
 if uploaded_file is not None:
     # Display uploaded file details
     st.write("Uploaded file:", uploaded_file.name)
-    
+
     # Read PDF content
-    pdf_content = uploaded_file.read()
+    pdf_reader = PyPDF2.PdfReader(uploaded_file)
+    pdf_content = ' '.join([page.extract_text() for page in pdf_reader.pages])
 
     # User question
     question = st.text_input("Enter your question")
@@ -33,7 +35,7 @@ if uploaded_file is not None:
         # Prepare the payload for OpenAI API
         payload = {
             'prompt': question,
-            'documents': [pdf_content.decode('utf-8')],
+            'documents': [pdf_content],
             'max_tokens': 100
         }
         headers = {

@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 import json
-import PyPDF2
+import fitz
 
 # OpenAI API configuration
 OPENAI_API_KEY = 'YOUR_API_KEY'
@@ -25,8 +25,10 @@ if uploaded_file is not None:
     st.write("Uploaded file:", uploaded_file.name)
 
     # Read PDF content
-    pdf_reader = PyPDF2.PdfReader(uploaded_file)
-    pdf_content = ' '.join([page.extract_text() for page in pdf_reader.pages])
+    pdf_content = ""
+    with fitz.open(stream=uploaded_file.read(), filetype="pdf") as pdf:
+        for page in pdf:
+            pdf_content += page.getText()
 
     # User question
     question = st.text_input("Enter your question")

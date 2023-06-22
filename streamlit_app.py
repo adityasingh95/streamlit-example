@@ -4,14 +4,14 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chains import RetrievalQA
-from PyPDF2 import PdfFileReader
+from PyPDF2 import PdfReader
 from io import BytesIO
 
 def generate_response(uploaded_file, openai_api_key, query_text):
     # Load document if file is uploaded
     if uploaded_file is not None:
         # Read PDF file
-        pdf = PdfFileReader(uploaded_file)
+        pdf = PdfReader(uploaded_file)
         documents = [page.extract_text() for page in pdf.pages]
         # Split documents into chunks
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)

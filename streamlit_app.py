@@ -4,6 +4,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chains import RetrievalQA
+from langchain.document_loaders import TextLoader
 
 from langchain.document_loaders import PyPDFLoader
 
@@ -32,6 +33,7 @@ st.title('🦜🔗 Ask the Doc App')
 
 # File upload
 uploaded_file = st.file_uploader('Upload an article')
+st.write("filename:", uploaded_file.name)
 # Query text
 query_text = st.text_input('Enter your question:', placeholder = 'Please provide a short summary.', disabled=not uploaded_file)
 
